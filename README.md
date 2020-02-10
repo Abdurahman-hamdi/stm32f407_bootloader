@@ -18,8 +18,8 @@ i have modified the functionality of this python script (https://github.com/cnov
                                                         Thanks for reading
 
 References and url links.
->mastering stm32,,,
->stm32f407 reference manual,,,
+>mastering stm32\n
+>stm32f407 reference manual\n
 >https://www.beningo.com/wp-content/uploads/images/Papers/bootloader_design_for_microcontrollers_in_embedded_systems%20.pdf
 
 
