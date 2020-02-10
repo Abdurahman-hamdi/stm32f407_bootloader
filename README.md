@@ -15,9 +15,11 @@ once an upgrade request during app execution  the app user can accept this reque
 .
 .
 i have modified the functionality of this python script (https://github.com/cnoviello/mastering-stm32/blob/master/nucleo-l073RZ/src/ch20/flasher.py) to meet the design and gives more flexibility which is provide a channel and commands exchanging between host(pc) and the target(div-board)...........................................................................
-                                                        Thanks for reading 
-                                                        
-                                                                 
+                                                        Thanks for reading
 
+References and url links.
+>mastering stm32
+>stm32f407 reference manual
+>https://www.beningo.com/wp-content/uploads/images/Papers/bootloader_design_for_microcontrollers_in_embedded_systems%20.pdf
 
 
