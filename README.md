@@ -1,6 +1,6 @@
 # stm32f407_bootloader
-Author  Abdurahman hamdi..................................................................................................................
-Email  bg201540@gmail.com
+Author  Abdurahman hamdi,
+Email  bg201540@gmail.com,
 Date   10.2.2020
 >>> 
 This a simple bootloader for stm32f407 div-board which is based on cortexM-4 arch.
