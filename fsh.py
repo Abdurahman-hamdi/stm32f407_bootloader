@@ -1,17 +1,13 @@
 from __future__ import print_function
 
 import sys, serial, binascii, time, struct, thread, argparse
-import ctypes
+
 from intelhex import IntelHex
-from Crypto.Cipher import AES
 
 
-#The AES key used to encrypt exchanged firmware
-AES_KEY = "4D:61:73:74:65:72:69:6E:67:20:20:53:54:4D:33:32"
 
-#We convert the key from the hexadecimal form to binary data
-AES_KEY = binascii.unhexlify(AES_KEY.replace(":", ""))
-AESEncryptor = AES.new(AES_KEY, AES.MODE_ECB)
+
+
 
 ACK       = 0x79
 NACK      = 0x1F
@@ -23,23 +19,7 @@ CMD_wr_p  = 0x33
 RE_wr_pr  = 0x55
 up_date   = 0x66
 
-STM32_TYPE = {
-    0x410: "STM32F103RB",
-    0x415: "STM32L152RG",        
-    0x417: "STM32L053R8",    
-    0x421: "STM32F446RE",
-    0x431: "STM32F411RE",
-    0x433: "STM32F401RE",
-    0x437: "STM32L152RE",
-    0x439: "STM32F302R8",    
-    0x438: "STM32F334R8",        
-    0x440: "STM32F030R8",
-    0x442: "STM32F091RC",
-    0x446: "STM32F303RE",
-    0x447: "STM32L073RZ",    
-    0x448: "STM32F070RB/STM32F072RB",
-    0x458: "STM32F410RB",    
-}
+
 
 class ProgramModeError(Exception):
     pass
@@ -52,13 +32,9 @@ class STM32Flasher(object):
         self.serial = serial.Serial(serialPort, baudrate=baudrate, timeout=30)
     
 	
-	# def _str_(self,data):
-       # # ser = serial.Serial():
-       
-		
-       # self.serial.write(data)
+	
     def _sstr_(self,data):
-       # ser = serial.Serial():
+       
        
 		
         self.serial.write(data)
@@ -83,15 +59,6 @@ class STM32Flasher(object):
         cmd = list(msg) + list(struct.pack("I", self._crc_stm32(msg)))
         return cmd
     
-	# def _write_protection(self,sector):
-	    # self.serial.flushInput()
-        # self.serial.write(self._create_cmd_message((CMD_wr_p,sector)))
-        # data = self.serial.read(1)
-        # if len(data) == 1:
-            # if struct.unpack("b", data)[0] != ACK:
-                # raise ProgramModeError("Can't erase FLASH")
-        # else:
-            # raise TimeoutError("Timeout error")
 	
     def _write_protection(self, sector):
         self.serial.flushInput()
@@ -99,7 +66,7 @@ class STM32Flasher(object):
         data = self.serial.read(1)
         if len(data) == 1:
             if struct.unpack("b", data)[0] != ACK:
-                raise ProgramModeError("Can't erase FLASH")
+                raise ProgramModeError("Can't remove write protection")
         else:
             raise TimeoutError("Timeout error")
     def _Re_write_protection(self, sector):
@@ -108,7 +75,7 @@ class STM32Flasher(object):
         data = self.serial.read(1)
         if len(data) == 1:
             if struct.unpack("b", data)[0] != ACK:
-                raise ProgramModeError("Can't erase FLASH")
+                raise ProgramModeError("Can't remove write protection")
         else:
             raise TimeoutError("Timeout error")
 	
@@ -127,7 +94,7 @@ class STM32Flasher(object):
         data = self.serial.read(1)
         if len(data) == 1:
             if struct.unpack("b", data)[0] != ACK:
-                raise ProgramModeError("Can't jump")
+                raise ProgramModeError("Can't update")
         else:
             raise TimeoutError("Timeout error")
 
@@ -142,21 +109,7 @@ class STM32Flasher(object):
         else:
             raise TimeoutError("Timeout error")
       
-    def getID(self):
-        #Sends an CMD_ERASE to the bootloader
-        self.serial.flushInput()
-        self.serial.write(self._create_cmd_message((CMD_GETID,)))
-        data = self.serial.read(1)
-        if len(data) == 1:
-            if struct.unpack("b", data)[0] != ACK:
-                raise ProgramModeError("CMD_GETID failed")
-            else:
-                data = self.serial.read(2)
-                if len(data) == 2:
-                    return struct.unpack("h", data)[0]
-                raise ProgramModeError("CMD_GETID failed") 
-        else:
-            raise TimeoutError("Timeout error")
+    
 
     def writeImage(self, filename):
         #Sends an CMD_WRITE to the bootloader
@@ -237,18 +190,7 @@ if __name__ == '__main__':
     
 	
     flasher._sstr_("s")
-   # flasher.eraseFLASH(0x20)
-		
-    
-    
-    
-        
-    
-    #Start a new thread so that the user can receive
-    #a feedback that the erase is ongoing
-    #thread.start_new_thread(doErase, (None,))
-    #While the 'doErase' thread does't set the 'eraseDone'
-    #variable to 1, we print a dot every 0.5s 
+   
     print("\n\twant to upgrade the firmware?")
     value = input("Please enter yes or No:\n")
     if value == "yes":
