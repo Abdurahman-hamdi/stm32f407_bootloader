@@ -22,33 +22,33 @@ void strTransmit(const char data)
 
 void USART3_IRQ_Callback(void)
 {
-if((USART3->SR & USART_SR_IDLE) == USART_SR_IDLE)
- {   /* Read data register to clear idle line flag "cmd receiving has finished "*/
-			 (void)USART3->DR;
-			  //end of rx buffer
-			 RxBuffer[i]=0;
-			 i=USART3->DR;
-			 i=0;//clean to receive new cmd
-			  // set led and Set CMD status
-			 GPIO_SetBits(GPIOD,GPIO_Pin_12);
-			  current_cmd_Status = USART3_CMD_RECEIVED;
-			  return;
-			  }
+	if((USART3->SR & USART_SR_IDLE) == USART_SR_IDLE)
+        {   /* Read data register to clear idle line flag "cmd receiving has finished "*/
+		(void)USART3->DR;
+		//end of rx buffer
+		RxBuffer[i]=0;
+		i=USART3->DR;
+		i=0;//clean to receive new cmd
+		// set led and Set CMD status
+		GPIO_SetBits(GPIOD,GPIO_Pin_12);
+		current_cmd_Status = USART3_CMD_RECEIVED;
+		return;
+         }
 
-  /* Check USART receiver */
-  if((USART3->SR & USART_SR_RXNE) == USART_SR_RXNE)
-  {
-    // Read character
-    RxChar = USART3->DR;
-//FILL RECIVER BUFFER
-    RxBuffer[i++]=RxChar;
+       /* Check USART receiver */
+        if((USART3->SR & USART_SR_RXNE) == USART_SR_RXNE)
+	{
+               // Read character
+		RxChar = USART3->DR;
+                //FILL RECIVER BUFFER
+                RxBuffer[i++]=RxChar;
 
 
-  }
-  else
-  {
-   //  No new data received
-  }
+       }
+       else
+        {
+       //  No new data received
+        }
 }
 void USART3_Init(void)
 {
@@ -56,8 +56,8 @@ void USART3_Init(void)
 	 /* Enable USART3 clock */
 	  RCC->APB1ENR = RCC_APB1ENR_USART3EN;
 
-	  /* Select oversampling by 16 mode */
-	  USART3->CR1 &= ~USART_CR1_OVER8;
+	  /* Select oversampling by 8 mode */
+	  USART3->CR1 |= USART_CR1_OVER8;
 
 	  /* Select one sample bit method */
 	  USART3->CR3 |= USART_CR3_ONEBIT;
