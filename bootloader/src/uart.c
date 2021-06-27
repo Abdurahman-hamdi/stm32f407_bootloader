@@ -87,34 +87,34 @@ void USART3_Init(void)
 void USART3_Enable(void)
 {
 
- /* Enable USART3 */
-  USART3->CR1 |= USART_CR1_UE;
+	 /* Enable USART3 */
+	  USART3->CR1 |= USART_CR1_UE;
 
-  /* Enable transmitter */
-  USART3->CR1 |= USART_CR1_TE;
+	  /* Enable transmitter */
+	  USART3->CR1 |= USART_CR1_TE;
 
-  /* Enable receiver */
-  USART3->CR1 |= USART_CR1_RE;
+	  /* Enable receiver */
+	  USART3->CR1 |= USART_CR1_RE;
 
-  /* Enable idle line detection interrupt */
-  USART3->CR1 |= USART_CR1_IDLEIE;
+	  /* Enable idle line detection interrupt */
+	  USART3->CR1 |= USART_CR1_IDLEIE;
 
-  /* Enable reception buffer not empty flag interrupt */
- USART3->CR1 |= USART_CR1_RXNEIE;
+	  /* Enable reception buffer not empty flag interrupt */
+	 USART3->CR1 |= USART_CR1_RXNEIE;
 
 
 
 }
 void NVIC_Int(void)
 {
-  /* Set priority group to 3
-   * bits[3:0] are the sub-priority,
-   * bits[7:4] are the pre-empt priority (0-15) */
-  NVIC_SetPriorityGrouping(3);
+	  /* Set priority group to 3
+	   * bits[3:0] are the sub-priority,
+	   * bits[7:4] are the pre-empt priority (0-15) */
+	  NVIC_SetPriorityGrouping(3);
 
-  NVIC_SetPriority(USART3_IRQn, 1);
+	  NVIC_SetPriority(USART3_IRQn, 1);
 
-  NVIC_EnableIRQ(USART3_IRQn);
+	  NVIC_EnableIRQ(USART3_IRQn);
 
 
 
