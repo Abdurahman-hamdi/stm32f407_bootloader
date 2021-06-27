@@ -57,7 +57,7 @@ void USART3_Init(void)
 	  RCC->APB1ENR = RCC_APB1ENR_USART3EN;
 
 	  /* Select oversampling by 8 mode */
-	  USART3->CR1 |= USART_CR1_OVER8;
+	  USART3->CR1 &= ~USART_CR1_OVER8;
 
 	  /* Select one sample bit method */
 	  USART3->CR3 |= USART_CR3_ONEBIT;
