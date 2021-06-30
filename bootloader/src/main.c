@@ -38,88 +38,90 @@ SOFTWARE.
 #define  APP_START_ADDRESS  *((volatile uint32_t*) (0x08008000 )) //0x08008000 is used to hold image start address to be checked before jump to app
 unsigned char __attribute__((section (".myBufSection"))) buf;//8bit buffer indicates "upgrade" request when application runs
 int main(void)
-{//
-	__enable_irq();{
-RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-GPIO_InitTypeDef GPIO_InitDef;
-GPIO_InitDef.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_15|GPIO_Pin_14;
-GPIO_InitDef.GPIO_Mode = GPIO_Mode_OUT;
-GPIO_InitDef.GPIO_OType = GPIO_OType_PP;
-GPIO_InitDef.GPIO_PuPd = GPIO_PuPd_NOPULL;
-GPIO_InitDef.GPIO_Speed = GPIO_Speed_2MHz;
-GPIO_Init(GPIOD, &GPIO_InitDef);
-}
-
-uint32_t JumpAddress = APP_START_ADDRESS;// image Starting address
-uint32_t val=*(volatile uint32_t*)JumpAddress;//stack pointer which reside in image Starting address
-if(JumpAddress==0xffffffff||*(volatile unsigned char *)&buf==1)//Enter bootloader if no image founds or upgrade request has been  received
 {
-*(volatile unsigned char *)&buf==0;//Reset buffer indicating that the upgrade req has been processed
-boot_process();//enter bootloader
-}
-else{//jump to the existing image
+	__enable_irq();
+	{
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+	GPIO_InitTypeDef GPIO_InitDef;
+	GPIO_InitDef.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_15|GPIO_Pin_14;
+	GPIO_InitDef.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitDef.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitDef.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitDef.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOD, &GPIO_InitDef);
+	}
 
-    __disable_irq();//disable interrupts to be safe during cleaning up --> jump
+	uint32_t JumpAddress = APP_START_ADDRESS;// image Starting address
+	uint32_t val=*(volatile uint32_t*)JumpAddress;//stack pointer which reside in image Starting address
+	if(JumpAddress==0xffffffff||*(volatile unsigned char *)&buf==1)//Enter bootloader if no image founds or upgrade request has been  received
+	 {
+		*(volatile unsigned char *)&buf==0;//Reset buffer indicating that the upgrade req has been processed
+		boot_process();//enter bootloader
+	 }
+	else
+	{//jump to the existing image
 
-    /* Reset GPIOD "GPIO_Pin_12,14 and 15" */
-    RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIODRST );
-    /* Release reset */
-    RCC->AHB1RSTR = 0;
-    /* Reset RCC */
-    /* Set HSION bit to the reset value */
-    RCC->CR |= RCC_CR_HSION;
-   /* Wait till HSI is ready */
-    while(RCC_CR_HSIRDY != (RCC_CR_HSIRDY & RCC->CR))
-    {
-      /* Waiting */
-    }
-/* Set HSITRIM[4:0] bits to the reset value */
-    RCC->CR |= RCC_CR_HSITRIM_4;
-/* Reset CFGR register */
-    RCC->CFGR = 0;
-/* Wait till clock switch is ready and
-     * HSI oscillator selected as system clock */
-    while(0 != (RCC_CFGR_SWS & RCC->CFGR))
-    {
-      /* Waiting */
-    }
+		__disable_irq();//disable interrupts to be safe during cleaning up --> jump
+
+		    /* Reset GPIOD "GPIO_Pin_12,14 and 15" */
+		RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIODRST );
+		    /* Release reset */
+		RCC->AHB1RSTR = 0;
+		    /* Reset RCC */
+		    /* Set HSION bit to the reset value */
+		RCC->CR |= RCC_CR_HSION;
+		   /* Wait till HSI is ready */
+	        while(RCC_CR_HSIRDY != (RCC_CR_HSIRDY & RCC->CR))
+		    {
+		      /* Waiting */
+		    }
+		/* Set HSITRIM[4:0] bits to the reset value */
+		RCC->CR |= RCC_CR_HSITRIM_4;
+		/* Reset CFGR register */
+	        RCC->CFGR = 0;
+		/* Wait till clock switch is ready and
+		     * HSI oscillator selected as system clock */
+	        while(0 != (RCC_CFGR_SWS & RCC->CFGR))
+		    {
+		      /* Waiting */
+		    }
 
     /* Clear HSEON, HSEBYP and CSSON bits */
-    RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_HSEBYP | RCC_CR_CSSON);
+		RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_HSEBYP | RCC_CR_CSSON);
 
     /* Wait till HSE is disabled */
-    while(0 != (RCC_CR_HSERDY & RCC->CR))
-    {
-      /* Waiting */
-    }
+	       while(0 != (RCC_CR_HSERDY & RCC->CR))
+	    	   {
+	      /* Waiting */
+	           }
 
     /* Clear PLLON bit */
-    RCC->CR &= ~RCC_CR_PLLON;
+   	     RCC->CR &= ~RCC_CR_PLLON;
 
     /* Wait till PLL is disabled */
-    while(0 != (RCC_CR_PLLRDY & RCC->CR))
-    {
-      /* Waiting */
-    }
+            while(0 != (RCC_CR_PLLRDY & RCC->CR))
+	        {
+          /* Waiting */
+		}
 
-    /* Reset PLLCFGR register to default value */
-    RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6
-        | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
+   /* Reset PLLCFGR register to default value */
+           RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6
+           | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
 
-    /* if systimer is used, Reset SysTick */
-    SysTick->CTRL = 0;
-    SysTick->LOAD = 0;
-    SysTick->VAL = 0;
+ /* if systimer is used, Reset SysTick */
+	   SysTick->CTRL = 0;
+           SysTick->LOAD = 0;
+           SysTick->VAL = 0;	
 
     /* Vector Table Relocation in Internal FLASH " image starting address*/
-    __DMB();
-              SCB->VTOR = JumpAddress;
-              __DSB();
-              void (*jump_to_bl)(void) = (void *)(*((uint32_t *)(JumpAddress + 4)));//Set fun_pointer pointing to image reset handler
+           __DMB();
+          SCB->VTOR = JumpAddress;
+          __DSB();
+          void (*jump_to_bl)(void) = (void *)(*((uint32_t *)(JumpAddress + 4)));//Set fun_pointer pointing to image reset handler
 
-                      /* Set stack pointer */
-                       __set_MSP(val);
-                       jump_to_bl();//de-reference fun_ptr to execute image reset handler
-}
+   /* Set stack pointer */
+          __set_MSP(val);
+         jump_to_bl();//de-reference fun_ptr to execute image reset handler
+	}
 
 }
