@@ -87,41 +87,41 @@ int main(void)
 		    }
 
     /* Clear HSEON, HSEBYP and CSSON bits */
-		RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_HSEBYP | RCC_CR_CSSON);
+		 RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_HSEBYP | RCC_CR_CSSON);
 
     /* Wait till HSE is disabled */
-	       while(0 != (RCC_CR_HSERDY & RCC->CR))
+	         while(0 != (RCC_CR_HSERDY & RCC->CR))
 	    	   {
 	      /* Waiting */
 	           }
 
     /* Clear PLLON bit */
-   	     RCC->CR &= ~RCC_CR_PLLON;
+   	          RCC->CR &= ~RCC_CR_PLLON;
 
     /* Wait till PLL is disabled */
-            while(0 != (RCC_CR_PLLRDY & RCC->CR))
-	        {
-          /* Waiting */
-		}
+                  while(0 != (RCC_CR_PLLRDY & RCC->CR))
+	          {
+		  /* Waiting */
+		  }
 
    /* Reset PLLCFGR register to default value */
-           RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6
-           | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
+		 RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6
+		   | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
 
  /* if systimer is used, Reset SysTick */
-	   SysTick->CTRL = 0;
-           SysTick->LOAD = 0;
-           SysTick->VAL = 0;	
+		  SysTick->CTRL = 0;
+		  SysTick->LOAD = 0;
+		  SysTick->VAL = 0;	
 
-    /* Vector Table Relocation in Internal FLASH " image starting address*/
-           __DMB();
-          SCB->VTOR = JumpAddress;
-          __DSB();
-          void (*jump_to_bl)(void) = (void *)(*((uint32_t *)(JumpAddress + 4)));//Set fun_pointer pointing to image reset handler
+	    /* Vector Table Relocation in Internal FLASH " image starting address*/
+		  __DMB();
+		 SCB->VTOR = JumpAddress;
+		 __DSB();
+		 void (*jump_to_bl)(void) = (void *)(*((uint32_t *)(JumpAddress + 4)));//Set fun_pointer pointing to image reset handler
 
    /* Set stack pointer */
-          __set_MSP(val);
-         jump_to_bl();//de-reference fun_ptr to execute image reset handler
+                  __set_MSP(val);
+         	  jump_to_bl();//de-reference fun_ptr to execute image reset handler
 	}
 
 }
