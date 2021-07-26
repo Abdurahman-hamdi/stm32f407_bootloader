@@ -16,53 +16,52 @@ void boot_process(){
 	  while(1){
 		  switch(current_cmd_Status){
 	  	  case USART3_CMD_RECEIVED:
-		  switch(RxBuffer[0]){
-			case 's': // start session
-			current_cmd_Status = USART3_NO_cmd;
-			break;
+			  switch(RxBuffer[0]){
+				case 's': // start session
+				current_cmd_Status = USART3_NO_cmd;
+				break;
 
-			case CMD_ERASE:
-			CRC_ResetDR();
-			cmdErase(RxBuffer);
-			CRC_ResetDR();
-			 break;
+	       case CMD_ERASE:
+				CRC_ResetDR();
+				cmdErase(RxBuffer);
+				CRC_ResetDR();
+				 break;
 
 			case CMD_WRITE:
-			CRC_ResetDR();
-			cmdWrite(RxBuffer);
-			CRC_ResetDR();
-            		break;
+				 CRC_ResetDR();
+				 cmdWrite(RxBuffer);
+				 CRC_ResetDR();
+            	 break;
 		
 			case CMD_Jump:
-			CRC_ResetDR();
-			cmdjump(RxBuffer);
-			CRC_ResetDR();
-        	        break;
-		        case CMD_wr_p:
-			CRC_ResetDR();
-			wr_prot(RxBuffer);
-			CRC_ResetDR();
-			break;
-				  
-		        case RE_wr_pr:
-			CRC_ResetDR();
-			Re_wr_prot(RxBuffer);
-			CRC_ResetDR();
-			break;
+				 CRC_ResetDR();
+				 cmdjump(RxBuffer);
+				 CRC_ResetDR();
+        	     break;
+		   case CMD_wr_p:
+				CRC_ResetDR();
+				wr_prot(RxBuffer);
+				CRC_ResetDR();
+				break;
+		  case RE_wr_pr:
+				CRC_ResetDR();
+				Re_wr_prot(RxBuffer);
+				CRC_ResetDR();
+				break;
 
-		        case up_date:
-			CRC_ResetDR();
-			update(RxBuffer);
-			CRC_ResetDR();
+		  case up_date:
+				CRC_ResetDR();
+				update(RxBuffer);
+				CRC_ResetDR();
 		        break;
 
 
 		                    }
 
 		case USART3_NO_cmd:
-      		GPIO_SetBits(GPIOD,GPIO_Pin_15);
-                GPIO_ResetBits(GPIOD,GPIO_Pin_12);
-		break;
+      		  GPIO_SetBits(GPIOD,GPIO_Pin_15);
+              GPIO_ResetBits(GPIOD,GPIO_Pin_12);
+		      break;
 
 	}
 
@@ -165,85 +164,85 @@ void cmdjump(uint8_t*p){
 		    /* Check if it has valid stack pointer in the RAM */
 		    if(0x20000000 == (val & 0x20000000))
 		    {   crc=0xfffff;
-			strTransmit(ACK);
-			while(crc--);
-			      /* Disable all interrupts */
-		      __disable_irq();
+				strTransmit(ACK);
+				while(crc--);
+					  /* Disable all interrupts */
+				  __disable_irq();
 
-		      /* Reset GPIOB */
-		      RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIOBRST );
-		      RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIODRST );
+				  /* Reset GPIOB */
+				  RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIOBRST );
+				  RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIODRST );
 
-		      /* Release reset */
-		      RCC->AHB1RSTR = 0;
+				  /* Release reset */
+				  RCC->AHB1RSTR = 0;
 
-		      /* Reset USART3 */
-		      RCC->APB1RSTR = RCC_APB1RSTR_USART3RST;
+				  /* Reset USART3 */
+				  RCC->APB1RSTR = RCC_APB1RSTR_USART3RST;
 
-		      /* Release reset */
-		      RCC->APB1RSTR = 0;
+				  /* Release reset */
+				  RCC->APB1RSTR = 0;
 
-		      /* Reset RCC */
-		      /* Set HSION bit to the reset value */
-		      RCC->CR |= RCC_CR_HSION;
+				  /* Reset RCC */
+				  /* Set HSION bit to the reset value */
+				  RCC->CR |= RCC_CR_HSION;
 
-		      /* Wait till HSI is ready */
-		      while(RCC_CR_HSIRDY != (RCC_CR_HSIRDY & RCC->CR))
-		      {
-			/* Waiting */
-		      }
+				  /* Wait till HSI is ready */
+				  while(RCC_CR_HSIRDY != (RCC_CR_HSIRDY & RCC->CR))
+				  {
+				/* Waiting */
+				  }
 
-		      /* Set HSITRIM[4:0] bits to the reset value */
-		      RCC->CR |= RCC_CR_HSITRIM_4;
+				  /* Set HSITRIM[4:0] bits to the reset value */
+				  RCC->CR |= RCC_CR_HSITRIM_4;
 
-		      /* Reset CFGR register */
-		      RCC->CFGR = 0;
+				  /* Reset CFGR register */
+				  RCC->CFGR = 0;
 
-		      /* Wait till clock switch is ready and
-		       * HSI oscillator selected as system clock */
-		      while(0 != (RCC_CFGR_SWS & RCC->CFGR))
-		      {
-			/* Waiting */
-		      }
+				  /* Wait till clock switch is ready and
+				   * HSI oscillator selected as system clock */
+				  while(0 != (RCC_CFGR_SWS & RCC->CFGR))
+				  {
+				/* Waiting */
+				  }
 
-		      /* Clear HSEON, HSEBYP and CSSON bits */
-		      RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_HSEBYP | RCC_CR_CSSON);
+				  /* Clear HSEON, HSEBYP and CSSON bits */
+				  RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_HSEBYP | RCC_CR_CSSON);
 
-		      /* Wait till HSE is disabled */
-		      while(0 != (RCC_CR_HSERDY & RCC->CR))
-		      {
-			/* Waiting */
-		      }
+				  /* Wait till HSE is disabled */
+				  while(0 != (RCC_CR_HSERDY & RCC->CR))
+				  {
+				/* Waiting */
+				  }
 
-		      /* Clear PLLON bit */
-		      RCC->CR &= ~RCC_CR_PLLON;
+				  /* Clear PLLON bit */
+				  RCC->CR &= ~RCC_CR_PLLON;
 
-		      /* Wait till PLL is disabled */
-		      while(0 != (RCC_CR_PLLRDY & RCC->CR))
-		      {
-			/* Waiting */
-		      }
+				  /* Wait till PLL is disabled */
+				  while(0 != (RCC_CR_PLLRDY & RCC->CR))
+				  {
+				/* Waiting */
+				  }
 
-		      /* Reset PLLCFGR register to default value */
-		      RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6
-			 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
+				  /* Reset PLLCFGR register to default value */
+				  RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6
+				 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
 
-		      /* Reset SysTick */
-		      SysTick->CTRL = 0;
-		      SysTick->LOAD = 0;
-		      SysTick->VAL = 0;
-		     // RCC_APB2PeriphResetCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-		      /* Vector Table Relocation in Internal FLASH */
-		      __DMB();
-		      SCB->VTOR = address;
-		     __DSB();
-		     void (*jump_address)(void) = (void *)(*((uint32_t *)(address + 4)));
+				  /* Reset SysTick */
+				  SysTick->CTRL = 0;
+				  SysTick->LOAD = 0;
+				  SysTick->VAL = 0;
+				 // RCC_APB2PeriphResetCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+				  /* Vector Table Relocation in Internal FLASH */
+				  __DMB();
+				  SCB->VTOR = address;
+				 __DSB();
+				 void (*jump_address)(void) = (void *)(*((uint32_t *)(address + 4)));
 
-		    /* Set stack pointer */
-		    __set_MSP(val);
+				/* Set stack pointer */
+				__set_MSP(val);
 
-		   /* Jump */
-		    jump_address();
+			   /* Jump */
+				jump_address();
 
 
 		    }
