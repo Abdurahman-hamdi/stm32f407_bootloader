@@ -28,5 +28,17 @@ void USART3_GPIO_Config(void)
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_USART3);
 
 }
+void led_init(void)
+{
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+	GPIO_InitTypeDef GPIO_InitDef;
+	GPIO_InitDef.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_15|GPIO_Pin_14;
+	GPIO_InitDef.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitDef.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitDef.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitDef.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_Init(GPIOD, &GPIO_InitDef);
+	}
+
 
 
