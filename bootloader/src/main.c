@@ -35,27 +35,19 @@ SOFTWARE.
 #include "stm32f4xx_gpio.h"
 #include "gpio.h"
 #include "uart.h"
+
 #define  APP_START_ADDRESS  *((volatile uint32_t*) (0x08008000 )) //0x08008000 is used to hold image start address to be checked before jump to app
-unsigned char __attribute__((section (".myBufSection"))) buf;//8bit buffer indicates "upgrade" request when application runs
+unsigned char __attribute__((section (".no_init_ram"))) buf;//8bit buffer indicates "upgrade" request when application runs
+
 int main(void)
 {
 	__enable_irq();
-	{
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-	GPIO_InitTypeDef GPIO_InitDef;
-	GPIO_InitDef.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_15|GPIO_Pin_14;
-	GPIO_InitDef.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitDef.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitDef.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_InitDef.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_Init(GPIOD, &GPIO_InitDef);
-	}
-
+	led_init();
 	uint32_t JumpAddress = APP_START_ADDRESS;// image Starting address
 	uint32_t val=*(volatile uint32_t*)JumpAddress;//stack pointer which reside in image Starting address
-	if(JumpAddress==0xffffffff||*(volatile unsigned char *)&buf==1)//Enter bootloader if no image founds or upgrade request has been  received
+	if(JumpAddress==0xffffffff||*(volatile uint8_t *)&buf==1)//Enter bootloader if no image founds or upgrade request has been  received
 	 {
-		*(volatile unsigned char *)&buf==0;//Reset buffer indicating that the upgrade req has been processed
+		buf==0;//Reset buffer indicating that the upgrade req has been processed
 		boot_process();//enter bootloader
 	 }
 	else
@@ -68,10 +60,10 @@ int main(void)
 		    /* Release reset */
 		RCC->AHB1RSTR = 0;
 		    /* Reset RCC */
-		    /* Set HSION bit to the reset value */
+		/* Set HSION bit to the reset value */
 		RCC->CR |= RCC_CR_HSION;
-		   /* Wait till HSI is ready */
-	        while(RCC_CR_HSIRDY != (RCC_CR_HSIRDY & RCC->CR))
+		 /* Wait till HSI is ready */
+	    while(RCC_CR_HSIRDY != (RCC_CR_HSIRDY & RCC->CR))
 		    {
 		      /* Waiting */
 		    }
@@ -111,7 +103,7 @@ int main(void)
  /* if systimer is used, Reset SysTick */
 		  SysTick->CTRL = 0;
 		  SysTick->LOAD = 0;
-		  SysTick->VAL = 0;	
+		  SysTick->VAL = 0;
 
 	    /* Vector Table Relocation in Internal FLASH " image starting address*/
 		  __DMB();
@@ -120,8 +112,8 @@ int main(void)
 		 void (*jump_to_bl)(void) = (void *)(*((uint32_t *)(JumpAddress + 4)));//Set fun_pointer pointing to image reset handler
 
    /* Set stack pointer */
-                  __set_MSP(val);
-         	  jump_to_bl();//de-reference fun_ptr to execute image reset handler
+        __set_MSP(val);
+         jump_to_bl();//de-reference fun_ptr to execute image reset handler
 	}
 
 }
