@@ -98,7 +98,7 @@ class STM32Flasher(object):
         else:
             raise TimeoutError("Timeout error")
 
-    def eraseFLASH(self, nsectors=0x20):
+    def eraseFLASH(self, nsectors):
         #Sends an CMD_ERASE to the bootloader
         self.serial.flushInput()
         self.serial.write(self._create_cmd_message((CMD_ERASE,nsectors)))
