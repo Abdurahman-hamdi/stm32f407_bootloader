@@ -6,16 +6,17 @@ static int i=0;
 uint8_t RxBuffer[MAX_BUFFER_LENGTH + 1];
 static char RxChar = 0;
 USART3_cmd_StatusType current_cmd_Status = USART3_NO_cmd;//cmd receiving status
+
 void strTransmit(const char data)
 {
 
-	while(!(USART3->SR & USART_SR_TXE))
-	      {
-	         //Wait for transmission buffer empty flag
-	      }
-
 	      // Write data into transmit data register
 	      USART3->DR = data;
+	      //to ensure that byte has sent successfully
+	while(!(USART3->SR & USART_SR_TXE))
+	     {
+	      	         //Wait for transmission buffer empty flag
+	      }
 
 }
 
