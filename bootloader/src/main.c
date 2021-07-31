@@ -47,7 +47,7 @@ int main(void)
 	 }
 	else
 	{
-		jump_to_exist_app(APP_START_ADDRESS);
+		jump_to_exist_app((uint32_t)APP_START_ADDRESS);
 	}
 
 }
