@@ -1,12 +1,15 @@
 #include "bootloader.h"
+#include "stm32f4xx_gpio.h"
+#include "gpio.h"
 #include "uart.h"
-#include "stm32f4xx_crc.h"
+
 #include <string.h>
 
 extern USART3_cmd_StatusType current_cmd_Status;//CMD received status which is defined in uart.c
 extern uint8_t RxBuffer[MAX_BUFFER_LENGTH + 1];//cmd buffer which is defined in uart.c
 
 void boot_process(){
+	 led_init();
 	  NVIC_Int();
 	  USART3_GPIO_Config();
 	  USART3_Init();
@@ -105,11 +108,11 @@ void cmdWrite(uint8_t*pucData){
 
 	 if(ulCrc==val)
 	 {
-         	CRC_ResetDR();
-		memset(RxBuffer, 0, 20*sizeof(char));
-		strTransmit(ACK);
-      		while(current_cmd_Status==USART3_NO_cmd);//wait for the rest of command
-       		current_cmd_Status = USART3_NO_cmd;
+           CRC_ResetDR();
+		   memset(RxBuffer, 0, 20*sizeof(char));
+		   strTransmit(ACK);
+      	   while(current_cmd_Status==USART3_NO_cmd);//wait for the rest of command
+       	   current_cmd_Status = USART3_NO_cmd;
 	       memcpy(&ulCrc, pucData + 16, sizeof(uint32_t));
 	       for(int i = 0; i < 16; i++)
 			{
@@ -117,7 +120,7 @@ void cmdWrite(uint8_t*pucData){
 			}
 	       val=CRC_CalcBlockCRC((uint32_t*)pullData, 16);
 	       if(ulCrc==val)
-		{
+		    {
 
 			FLASH_Unlock();
 
@@ -128,21 +131,22 @@ void cmdWrite(uint8_t*pucData){
 			}
 			FLASH_Lock();
 			strTransmit(ACK);
-		 }
+		    }
 	       else 
-	       {
+	        {
 			strTransmit(NACK);
 			return;
+            }
 
 
-		}
 		 }
 
-		 else {
+		 else
+		 {
 			   strTransmit(NACK);
 			   return;
 
-			 }
+		}
 
 }
 void cmdjump(uint8_t*p){
@@ -158,107 +162,16 @@ void cmdjump(uint8_t*p){
 	{
 
                   /* Get jump address */
-		    uint32_t address =  *(uint32_t *)(p+1);
-		    uint32_t val = * (uint32_t *) address;
+		    uint32_t *address =  *(uint32_t *)(p+1);
+		    jump_to_new_app(address, strTransmit);
 
-		    /* Check if it has valid stack pointer in the RAM */
-		    if(0x20000000 == (val & 0x20000000))
-		    {   crc=0xfffff;
-				strTransmit(ACK);
-				while(crc--);
-					  /* Disable all interrupts */
-				  __disable_irq();
-
-				  /* Reset GPIOB */
-				  RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIOBRST );
-				  RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIODRST );
-
-				  /* Release reset */
-				  RCC->AHB1RSTR = 0;
-
-				  /* Reset USART3 */
-				  RCC->APB1RSTR = RCC_APB1RSTR_USART3RST;
-
-				  /* Release reset */
-				  RCC->APB1RSTR = 0;
-
-				  /* Reset RCC */
-				  /* Set HSION bit to the reset value */
-				  RCC->CR |= RCC_CR_HSION;
-
-				  /* Wait till HSI is ready */
-				  while(RCC_CR_HSIRDY != (RCC_CR_HSIRDY & RCC->CR))
-				  {
-				/* Waiting */
-				  }
-
-				  /* Set HSITRIM[4:0] bits to the reset value */
-				  RCC->CR |= RCC_CR_HSITRIM_4;
-
-				  /* Reset CFGR register */
-				  RCC->CFGR = 0;
-
-				  /* Wait till clock switch is ready and
-				   * HSI oscillator selected as system clock */
-				  while(0 != (RCC_CFGR_SWS & RCC->CFGR))
-				  {
-				/* Waiting */
-				  }
-
-				  /* Clear HSEON, HSEBYP and CSSON bits */
-				  RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_HSEBYP | RCC_CR_CSSON);
-
-				  /* Wait till HSE is disabled */
-				  while(0 != (RCC_CR_HSERDY & RCC->CR))
-				  {
-				/* Waiting */
-				  }
-
-				  /* Clear PLLON bit */
-				  RCC->CR &= ~RCC_CR_PLLON;
-
-				  /* Wait till PLL is disabled */
-				  while(0 != (RCC_CR_PLLRDY & RCC->CR))
-				  {
-				/* Waiting */
-				  }
-
-				  /* Reset PLLCFGR register to default value */
-				  RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6
-				 | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
-
-				  /* Reset SysTick */
-				  SysTick->CTRL = 0;
-				  SysTick->LOAD = 0;
-				  SysTick->VAL = 0;
-				 // RCC_APB2PeriphResetCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-				  /* Vector Table Relocation in Internal FLASH */
-				  __DMB();
-				  SCB->VTOR = address;
-				 __DSB();
-				 void (*jump_address)(void) = (void *)(*((uint32_t *)(address + 4)));
-
-				/* Set stack pointer */
-				__set_MSP(val);
-
-			   /* Jump */
-				jump_address();
-
-
-		    }
-	     else
-	     	    
-	     {
-
-     		 strTransmit(NACK);
-              }
 	}
 	
 	else
 	{
 
-                    	  strTransmit(NACK);
-                    	  return;
+              strTransmit(NACK);
+               return;
 
          }
 }
@@ -303,7 +216,7 @@ void Re_wr_prot(uint8_t*p){
 			FLASH->OPTCR |= FLASH_OPTCR_OPTSTRT;
 			FLASH_OB_Lock();
 			FLASH_Lock();
-		        strTransmit(ACK);
+		    strTransmit(ACK);
 		}
 		else
 		{
@@ -323,20 +236,19 @@ void update(uint8_t*p){
 		val=CRC_CalcBlockCRC(pulData, 5);
 		if(crc==val){
 			uint32_t address =  *(uint32_t *)(p+1);
-			if(0x8000000 == (address & 0x8000000))//valid image
+			if(FLASH_SADDR == (address & FLASH_SADDR))//valid image
 			    {   
-				crc=0xfffff;
 				strTransmit(ACK);
-				while(crc--);
 				//save the new App address
 				FLASH_Unlock();
 				FLASH_EraseSector(FLASH_Sector_2, VoltageRange_3);
 				FLASH_Lock();
 				FLASH_Unlock();
-				FLASH_ProgramWord((uint32_t)(0x08008000),address);
+				FLASH_ProgramWord((uint32_t)(IMAGE_SADDR),address);
 				FLASH_Lock();
 			    }
-			else{
+			else
+			    {
 				strTransmit(NACK);
 			     }
 
