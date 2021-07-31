@@ -113,7 +113,7 @@ void jump_to_exist_app(uint32_t*app_start_addess){
  * if msp met ,ACK is sent and  perform system initialization and then branch to new firmware
  *
  * */
-oper_statues jump_to_new_app(uint32_t *app_start_addess, void (* ACKNOWLEDGE)(cmd_oper cmd)){
+oper_statues jump_to_new_app(uint32_t *app_start_addess, void (* ACKNOWLEDGE)()){
 	             /* Check if it has valid stack pointer in the RAM */
 			    if(check_MSP(app_start_addess))
 			    {
