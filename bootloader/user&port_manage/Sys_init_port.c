@@ -29,11 +29,11 @@ static void sys_init (void){
 					  RCC->APB1RSTR = 0;
 
 					    /* Reset GPIOD "GPIO_Pin_12,14 and 15" */
-					RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIODRST );
-					 /* Release reset */
-					RCC->AHB1RSTR = 0;
-	                 __disable_irq();
-	                   /* Reset RCC */
+					    RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIODRST );
+					     /* Release reset */
+					    RCC->AHB1RSTR = 0;
+	                                     __disable_irq();
+	                                  /* Reset RCC */
 					  /* Set HSION bit to the reset value */
 					  RCC->CR |= RCC_CR_HSION;
 
