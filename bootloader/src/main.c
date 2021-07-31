@@ -32,88 +32,22 @@ SOFTWARE.
 #include "bootloader.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx.h"
-#include "stm32f4xx_gpio.h"
-#include "gpio.h"
-#include "uart.h"
 
-#define  APP_START_ADDRESS  *((volatile uint32_t*) (0x08008000 )) //0x08008000 is used to hold image start address to be checked before jump to app
-unsigned char __attribute__((section (".no_init_ram"))) buf;//8bit buffer indicates "upgrade" request when application runs
 
+//buf 32bit word buffer shared between bootloader and application stored in isolated non_init_ram away from memory segments that are set during startup process
+//being buf  stored in non_init_memory allows its value to be retained after system/software reset
+COMMON_BUF buf;
 int main(void)
 {
-	__enable_irq();
-	led_init();
-	uint32_t JumpAddress = APP_START_ADDRESS;// image Starting address
-	uint32_t val=*(volatile uint32_t*)JumpAddress;//stack pointer which reside in image Starting address
-	if(JumpAddress==0xffffffff||*(volatile uint8_t *)&buf==1)//Enter bootloader if no image founds or upgrade request has been  received
+	__enable_irq();//enable interrupts which has been disabled by app before sw reset
+	if(APP_START_ADDRESS==FREE_IMAGE||buf==1)//Enter bootloader if no image founds or upgrade request has been  received
 	 {
 		buf==0;//Reset buffer indicating that the upgrade req has been processed
 		boot_process();//enter bootloader
 	 }
 	else
-	{//jump to the existing image
-
-		__disable_irq();//disable interrupts to be safe during cleaning up --> jump
-
-		    /* Reset GPIOD "GPIO_Pin_12,14 and 15" */
-		RCC->AHB1RSTR = (RCC_AHB1RSTR_GPIODRST );
-		    /* Release reset */
-		RCC->AHB1RSTR = 0;
-		    /* Reset RCC */
-		/* Set HSION bit to the reset value */
-		RCC->CR |= RCC_CR_HSION;
-		 /* Wait till HSI is ready */
-	    while(RCC_CR_HSIRDY != (RCC_CR_HSIRDY & RCC->CR))
-		    {
-		      /* Waiting */
-		    }
-		/* Set HSITRIM[4:0] bits to the reset value */
-		RCC->CR |= RCC_CR_HSITRIM_4;
-		/* Reset CFGR register */
-	        RCC->CFGR = 0;
-		/* Wait till clock switch is ready and
-		     * HSI oscillator selected as system clock */
-	        while(0 != (RCC_CFGR_SWS & RCC->CFGR))
-		    {
-		      /* Waiting */
-		    }
-
-    /* Clear HSEON, HSEBYP and CSSON bits */
-		 RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_HSEBYP | RCC_CR_CSSON);
-
-    /* Wait till HSE is disabled */
-	         while(0 != (RCC_CR_HSERDY & RCC->CR))
-	    	   {
-	      /* Waiting */
-	           }
-
-    /* Clear PLLON bit */
-   	          RCC->CR &= ~RCC_CR_PLLON;
-
-    /* Wait till PLL is disabled */
-                  while(0 != (RCC_CR_PLLRDY & RCC->CR))
-	          {
-		  /* Waiting */
-		  }
-
-   /* Reset PLLCFGR register to default value */
-		 RCC->PLLCFGR = RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLN_6
-		   | RCC_PLLCFGR_PLLN_7 | RCC_PLLCFGR_PLLQ_2;
-
- /* if systimer is used, Reset SysTick */
-		  SysTick->CTRL = 0;
-		  SysTick->LOAD = 0;
-		  SysTick->VAL = 0;
-
-	    /* Vector Table Relocation in Internal FLASH " image starting address*/
-		  __DMB();
-		 SCB->VTOR = JumpAddress;
-		 __DSB();
-		 void (*jump_to_bl)(void) = (void *)(*((uint32_t *)(JumpAddress + 4)));//Set fun_pointer pointing to image reset handler
-
-   /* Set stack pointer */
-        __set_MSP(val);
-         jump_to_bl();//de-reference fun_ptr to execute image reset handler
+	{
+		jump_to_exist_app(APP_START_ADDRESS);
 	}
 
 }
