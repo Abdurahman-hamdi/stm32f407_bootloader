@@ -162,7 +162,7 @@ void cmdjump(uint8_t*p){
 	{
 
                   /* Get jump address */
-		    uint32_t *address =  *(uint32_t *)(p+1);
+		    uint32_t *address = (uint32_t*) *(uint32_t *)(p+1);
 		    jump_to_new_app(address, strTransmit);
 
 	}
@@ -176,7 +176,7 @@ void cmdjump(uint8_t*p){
          }
 }
 
-void wr_prot(uint8_t*p){
+void write_prot(uint8_t*p){
 
 		current_cmd_Status = USART3_NO_cmd;
 		uint32_t crc_val=0;
@@ -186,8 +186,7 @@ void wr_prot(uint8_t*p){
 		{
 			FLASH_Unlock();
 			FLASH_OB_Unlock();
-			FLASH->OPTCR &= ~((1 << p[1]) << 16);
-			 FLASH->OPTCR |= FLASH_OPTCR_OPTSTRT;
+			add_write_prot(p[1]);
 			while(FLASH_WaitForLastOperation==FLASH_BUSY);
 			FLASH_OB_Lock();
 			FLASH_Lock();
@@ -202,7 +201,7 @@ void wr_prot(uint8_t*p){
 		}
 
 }
-void Re_wr_prot(uint8_t*p){
+void Remove_wr_prot(uint8_t*p){
 
 	       current_cmd_Status = USART3_NO_cmd;
 		uint32_t crc_val=0;
@@ -212,8 +211,7 @@ void Re_wr_prot(uint8_t*p){
 		{
 			FLASH_Unlock();
 			FLASH_OB_Unlock();
-			FLASH->OPTCR |= ((1 << p[1]) << 16);
-			FLASH->OPTCR |= FLASH_OPTCR_OPTSTRT;
+			remove_write_prot(p[1]);
 			FLASH_OB_Lock();
 			FLASH_Lock();
 		    strTransmit(ACK);
