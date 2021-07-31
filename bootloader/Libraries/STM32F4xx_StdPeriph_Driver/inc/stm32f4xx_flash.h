@@ -329,7 +329,10 @@ typedef enum
 /**
   * @}
   */ 
-
+#define add_write_prot(p)     FLASH->OPTCR &= ~((1 << p) << 16);\
+		                      FLASH->OPTCR |= FLASH_OPTCR_OPTSTRT
+#define remove_write_prot(p)  FLASH->OPTCR |= ((1 << p) << 16);\
+		                      FLASH->OPTCR |= FLASH_OPTCR_OPTSTRT
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions --------------------------------------------------------*/ 
  
