@@ -19,7 +19,7 @@ typedef enum{
 void jump_to_exist_app(uint32_t*);
 
 //perform branching to new_firmware when system receives an upgrade_request and enters boatloader or where there is no firmware found
-oper_statues jump_to_new_app(uint32_t*,void (*)(cmd_oper ));
+oper_statues jump_to_new_app(uint32_t*,void (*)());
 
 
 
